@@ -104,7 +104,8 @@ brilliant-art/
 │   │   │   └── ContactTeaser.tsx           # CTA card with staged animation
 │   │   │
 │   │   ├── three/
-│   │   │   └── HeroScene.tsx               # 2D canvas particle physics (replaced Three.js)
+│   │   │   ├── HeroScene.tsx               # 2D canvas particle physics (background particles)
+│   │   │   └── GlobeScene.tsx              # Three.js interactive 3D globe (hero right side)
 │   │   │
 │   │   └── ui/
 │   │       ├── GlassCard.tsx               # glass-card wrapper with optional glow
@@ -205,7 +206,7 @@ Section render order:
 
 | # | Section | Component |
 |---|---|---|
-| 1 | Hero | `Hero.tsx` + `HeroScene.tsx` |
+| 1 | Hero | `Hero.tsx` + `HeroScene.tsx` + `GlobeScene.tsx` |
 | 2 | About | `AboutTeaser.tsx` |
 | 3 | Services | `ServicesTeaser.tsx` |
 | 4 | Portfolio | `PortfolioTeaser.tsx` (dynamic, ssr:false) |
@@ -280,7 +281,7 @@ requestAnimationFrame(() => ScrollTrigger.refresh())
 
 File: `src/components/three/HeroScene.tsx`
 
-Replaces the original Three.js glass orbs with a pure 2D `<canvas>` physics simulation.
+A pure 2D `<canvas>` physics simulation that fills the entire hero background.
 
 **Render layers (bottom → top):**
 
@@ -306,6 +307,38 @@ Replaces the original Three.js glass orbs with a pure 2D `<canvas>` physics simu
 **Mouse tracking**: window-level `mousemove` listener so particles respond to cursor position even when hovering over text or buttons layered above the canvas.
 
 **DPR handling**: uses `ctx.setTransform(dpr, 0, 0, dpr, 0, 0)` on every resize instead of `ctx.scale()` to prevent compounding transforms.
+
+---
+
+### `GlobeScene` — Interactive 3D Globe
+
+File: `src/components/three/GlobeScene.tsx`
+
+Vanilla Three.js globe rendered on a transparent-background WebGL canvas, positioned on the right half of the hero section (`absolute right-0 w-1/2 h-full z-20`). Dynamically imported with `ssr: false`.
+
+**Scene layers:**
+
+| Layer | Description |
+|---|---|
+| Point-cloud shell | 1,400 Fibonacci-distributed dots at radius R — replaces solid mesh, eliminates all z-fighting |
+| Lat/Lon grid | 9 latitude + 14 longitude `LineBasicMaterial` lines, `depthWrite: false` |
+| Network nodes | 64 accent dots (violet-light / violet / cyan-light / white) at R + 0.003 |
+| Connection lines | `LineSegments` between nearby nodes, vertex-colored violet/cyan, `depthWrite: false` |
+| Atmosphere | Two `BackSide` spheres with `AdditiveBlending` — cannot produce transparency sort artifacts |
+| Orbit ring 1 | Violet torus (R × 1.24), tilted 54°, continuous Z-spin |
+| Orbit ring 2 | Cyan torus (R × 1.38), tilted 27°, counter-spin |
+| Traveling sparks | One violet spark on ring1, one cyan on ring2 — positions computed via exact torus transform math |
+
+**Artifact fixes:**
+- **Z-fighting**: eliminated by using a point cloud instead of a solid `SphereGeometry` mesh
+- **Transparency sort disorder**: all transparent materials use `depthWrite: false`; atmosphere uses `AdditiveBlending`
+- **Ring rotation drift**: accumulated per-frame (`+= 0.004`) instead of absolute time multiplication
+
+**Interaction (mouse-hover driven):**
+- Mouse X → Y-axis rotation target (`± 0.7 rad`)
+- Mouse Y → X-axis rotation target (`± 0.275 rad`)
+- Lerp factor `0.04` for smooth, lag-free following
+- Auto-rotate resumes when mouse leaves; `baseAngle` syncs on `mouseleave` to prevent rotation jump
 
 ### `ExpandingCards`
 
@@ -355,9 +388,16 @@ Each section component (useGSAP + scope)
 
 `gsap.from()` sets the starting state when the tween is created. If a ScrollTrigger fires late or fails (due to layout shifts), elements stay stuck at their invisible `from` state. The `gsap.set` + `gsap.to` pattern guarantees the initial state is applied synchronously at call time, and ScrollTrigger only needs to drive toward the final state.
 
-### `ScrollTrigger.batch` (ServicesTeaser)
+### CSS Infinite Scroll (ServicesTeaser)
 
-Used for the 8-service card grid. Groups multiple elements entering the viewport into a single callback, animates them as a coordinated batch with `stagger: 0.10`. More robust than individual triggers for grid layouts.
+ServicesTeaser uses a pure CSS infinite marquee — no ScrollTrigger, no JavaScript animation. Two rows of cards scroll in opposite directions via `@keyframes svc-scroll` defined in `globals.css`.
+
+| Class | Direction | Duration |
+|---|---|---|
+| `.svc-scroll-left` | Left (default) | 44s |
+| `.svc-scroll-right` | Right (`animation-direction: reverse`) | 32s |
+
+`.svc-scroll-mask` applies an edge-fade via `mask: linear-gradient(90deg, transparent 0%, black 8%, black 92%, transparent 100%)`. Each row pauses on hover (`animation-play-state: paused`). The card strip is duplicated once so `translateX(-50%)` snaps seamlessly.
 
 ### Scrubbed Timeline Pattern (ProcessTeaser)
 
@@ -398,7 +438,7 @@ ScrollTrigger.create({
 |---|---|---|---|
 | Hero | GSAP timeline, clip-based word reveal | on load | no |
 | About | `gsap.set` + `gsap.to`, `once: true` | scroll down | no |
-| Services | `ScrollTrigger.batch`, `once: true` | scroll down | no |
+| Services | CSS infinite marquee (`@keyframes svc-scroll`) | continuous | — |
 | Portfolio | CSS grid transitions | hover/click | yes |
 | Process | Single scrubbed timeline | scroll both | yes |
 | ContactTeaser | GSAP timeline, `once: true` | scroll down | no |
@@ -498,6 +538,26 @@ NEXT_PUBLIC_FORM_ENDPOINT=https://your-endpoint.com
 ---
 
 ## 11. Changelog
+
+### 2026-04-29 — Interactive 3D Globe + Dual-Row Services Slider
+
+- **GlobeScene.tsx** added: Three.js point-cloud globe on the hero right side
+  - 1,400-dot Fibonacci sphere shell replaces solid mesh — eliminates z-fighting entirely
+  - Lat/lon grid, 64 network nodes, vertex-colored connection lines
+  - Two orbit rings (violet + cyan) with mathematically correct traveling sparks
+  - Additive-blending atmosphere — immune to transparency sort artifacts
+  - All transparent materials use `depthWrite: false`
+  - Ring rotation accumulated per-frame (not time-based) — no floating-point drift
+  - Mouse-hover interaction: globe smoothly follows cursor (X → Y-axis, Y → X-axis, lerp 0.04)
+  - Auto-rotates when mouse is away; syncs `baseAngle` on `mouseleave` to avoid rotation jump
+  - GSAP entrance: scales from near-zero with `power3.out` easing
+- **Hero.tsx** updated: `GlobeScene` dynamically imported (`ssr: false`) and rendered at `z-20`
+- **ServicesTeaser.tsx** redesigned: static 3-column grid → dual-row infinite CSS marquee
+  - Service data refactored from `description: string` to `items: string[]` checklist format
+  - `ServiceCard` component extracted with alternating violet/cyan hover effects
+  - Second row uses `.svc-scroll-right` (reversed animation direction)
+  - Cards pause on hover (`animation-play-state: paused`)
+- **globals.css**: `@keyframes svc-scroll`, `.svc-scroll-left`, `.svc-scroll-right`, `.svc-scroll-mask` added
 
 ### 2026-04-28 — Interactive Process Timeline
 
