@@ -12,6 +12,11 @@ const HeroScene = dynamic(
   { ssr: false },
 )
 
+const GlobeScene = dynamic(
+  () => import('@/components/three/GlobeScene').then((m) => ({ default: m.GlobeScene })),
+  { ssr: false },
+)
+
 const headline = ['Turning', 'Vision', 'Into', 'Creative', 'Power.']
 
 export function Hero() {
@@ -35,6 +40,9 @@ export function Hero() {
     >
       {/* Particle canvas — fills entire background */}
       <HeroScene />
+
+      {/* 3D globe — right side, above gradients */}
+      <GlobeScene />
 
       {/* Subtle left-side gradient so headline text stays legible */}
       <div className="absolute inset-0 z-10 bg-gradient-to-r from-void/75 via-void/25 to-transparent pointer-events-none" />
