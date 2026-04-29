@@ -6,6 +6,7 @@ import { AboutTeaser } from '@/components/sections/home/AboutTeaser'
 import { ServicesTeaser } from '@/components/sections/home/ServicesTeaser'
 import { ProcessTeaser } from '@/components/sections/home/ProcessTeaser'
 import { ContactTeaser } from '@/components/sections/home/ContactTeaser'
+import { PartnersMarquee } from '@/components/sections/home/PartnersMarquee'
 
 // Horizontal scroll section: requires window dimensions at mount — must be client-only
 const PortfolioTeaser = dynamic(
@@ -22,6 +23,7 @@ export default function Home() {
       <ServicesTeaser />
       <PortfolioTeaser />
       <ProcessTeaser />
+      <PartnersMarquee />
       <ContactTeaser />
       <Footer />
     </main>
