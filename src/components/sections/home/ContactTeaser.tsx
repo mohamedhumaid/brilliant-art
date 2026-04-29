@@ -76,16 +76,16 @@ export function ContactTeaser() {
 
           <div className="relative z-10">
             <p data-ct-label className="text-label-bold uppercase tracking-widest text-violet-light mb-6">
-              Let's Turn Ideas Into Results
+              Let&apos;s Turn Ideas Into Results
             </p>
 
             <h2 className="text-[clamp(2.5rem,6vw,72px)] font-bold leading-[1.0] tracking-[-0.03em] text-white mb-6">
               <span data-ct-line1 className="block">Have a project in mind?</span>
-              <span data-ct-line2 className="block text-gradient">Let's work together.</span>
+              <span data-ct-line2 className="block text-gradient">Let&apos;s work together.</span>
             </h2>
 
             <p data-ct-body className="text-body-lg text-on-surface-variant max-w-xl mx-auto mb-10">
-              Whether you're building a brand, launching a product, or entering new markets — we
+              Whether you&apos;re building a brand, launching a product, or entering new markets — we
               blend creativity, code, and content to make it happen.
             </p>
 

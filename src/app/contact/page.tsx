@@ -87,7 +87,7 @@ export default function ContactPage() {
             <SectionLabel>Get In Touch</SectionLabel>
           </div>
           <h1 data-page-hero className="text-[clamp(3rem,7vw,80px)] font-black leading-[0.95] tracking-[-0.04em] text-white max-w-4xl mb-6">
-            Let's Build Something <span className="text-gradient">Extraordinary</span>
+            Let&apos;s Build Something <span className="text-gradient">Extraordinary</span>
           </h1>
           <p data-page-hero className="text-body-lg text-on-surface-variant max-w-xl leading-relaxed">
             Tell us about your vision. We typically respond within 24 hours.
@@ -150,7 +150,7 @@ export default function ContactPage() {
                 <div className="w-16 h-16 rounded-full gradient-pill flex items-center justify-center text-2xl">✓</div>
                 <h2 className="text-headline-md font-semibold text-white">Message Sent!</h2>
                 <p className="text-body-md text-on-surface-variant">
-                  Thank you for reaching out. We'll be in touch within 24 hours.
+                  Thank you for reaching out. We&apos;ll be in touch within 24 hours.
                 </p>
                 <button
                   onClick={() => setSubmitted(false)}
@@ -230,7 +230,7 @@ export default function ContactPage() {
                 </GradientButton>
 
                 <p className="text-label-sm text-on-surface-variant text-center">
-                  We'll respond within 24 hours. Your information is kept confidential.
+                  We&apos;ll respond within 24 hours. Your information is kept confidential.
                 </p>
               </form>
             )}

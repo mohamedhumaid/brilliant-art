@@ -2,7 +2,7 @@
 
 import { useRef } from 'react'
 import { useGSAP } from '@gsap/react'
-import { gsap, ScrollTrigger } from '@/lib/gsap'
+import { gsap } from '@/lib/gsap'
 import { SectionLabel } from '@/components/ui/SectionLabel'
 import { GhostButton } from '@/components/ui/GhostButton'
 import { AnimatedCounter } from '@/components/ui/AnimatedCounter'
@@ -20,7 +20,7 @@ export function AboutTeaser() {
   useGSAP(
     () => {
       const items = gsap.utils.toArray<HTMLElement>('[data-about-reveal]')
-      items.forEach((el, i) => {
+      items.forEach((el) => {
         gsap.from(el, {
           autoAlpha: 0,
           y: 40,

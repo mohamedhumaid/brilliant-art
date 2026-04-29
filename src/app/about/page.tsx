@@ -105,7 +105,7 @@ export default function AboutPage() {
               [Full story content to be provided. This section will tell the origin story of Brilliant Art, the founding vision, and the journey to where the agency stands today.]
             </p>
             <p className="text-body-md text-on-surface-variant leading-relaxed">
-              [Additional narrative about the agency's growth, key milestones, and philosophy toward client work and creative excellence.]
+              [Additional narrative about the agency&apos;s growth, key milestones, and philosophy toward client work and creative excellence.]
             </p>
           </div>
 
@@ -151,7 +151,7 @@ export default function AboutPage() {
           <h2 className="text-[clamp(2rem,4vw,48px)] font-bold text-white mb-4">
             Ready to create something <span className="text-gradient">extraordinary?</span>
           </h2>
-          <p className="text-body-lg text-on-surface-variant mb-8">Let's start a conversation about your next project.</p>
+          <p className="text-body-lg text-on-surface-variant mb-8">Let&apos;s start a conversation about your next project.</p>
           <GradientButton href="/contact">Start a Project</GradientButton>
         </div>
       </section>

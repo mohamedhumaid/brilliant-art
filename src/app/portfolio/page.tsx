@@ -143,7 +143,7 @@ export default function PortfolioPage() {
           <h2 className="text-[clamp(2rem,4vw,48px)] font-bold text-white mb-4">
             Like what you see?
           </h2>
-          <p className="text-body-lg text-on-surface-variant mb-8">Let's create something just as remarkable for your brand.</p>
+          <p className="text-body-lg text-on-surface-variant mb-8">Let&apos;s create something just as remarkable for your brand.</p>
           <GradientButton href="/contact">Start a Project</GradientButton>
         </div>
       </section>

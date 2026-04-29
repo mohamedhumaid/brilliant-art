@@ -157,7 +157,7 @@ export default function ServicesPage() {
             Ready to get started?
           </h2>
           <p className="text-body-lg text-on-surface-variant mb-8">
-            Tell us about your project and we'll match you with the right services.
+            Tell us about your project and we&apos;ll match you with the right services.
           </p>
           <GradientButton href="/contact">Start a Project</GradientButton>
         </div>
