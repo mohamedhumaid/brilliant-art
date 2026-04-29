@@ -59,7 +59,7 @@ export function PartnersMarquee() {
 
       {/* Logo slider — fade mask on edges */}
       <div className="py-4 [mask-image:linear-gradient(to_right,transparent,black_15%,black_85%,transparent)]">
-        <InfiniteSlider gap={42} reverse speed={30} speedOnHover={25}>
+        <InfiniteSlider gap={42} reverse speed={30}>
           {LOGOS.map((file) => (
             // eslint-disable-next-line @next/next/no-img-element
             <img
