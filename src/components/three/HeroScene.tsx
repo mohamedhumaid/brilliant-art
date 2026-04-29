@@ -29,26 +29,44 @@ interface MouseState {
   isActive: boolean
 }
 
-const PARTICLE_DENSITY = 0.00010
-const BG_PARTICLE_DENSITY = 0.000035
-const MOUSE_RADIUS = 180
-const RETURN_SPEED = 0.08
-const DAMPING = 0.9
-const REPULSION = 1.2
+// Reduced density caps to prevent excessive particles on large/HiDPI screens
+const MAX_PARTICLES    = 120
+const MAX_BG_PARTICLES = 60
+const MOUSE_RADIUS     = 180
+const RETURN_SPEED     = 0.08
+const DAMPING          = 0.9
+const REPULSION        = 1.2
+const MAX_DPR          = 1.5   // cap canvas resolution — no need for 3× on Retina
 
 const rand = (min: number, max: number) => Math.random() * (max - min) + min
 
 export function HeroScene() {
-  const canvasRef = useRef<HTMLCanvasElement>(null)
-  const containerRef = useRef<HTMLDivElement>(null)
-  const particlesRef = useRef<Particle[]>([])
-  const bgParticlesRef = useRef<BgParticle[]>([])
-  const mouseRef = useRef<MouseState>({ x: -1000, y: -1000, isActive: false })
-  const frameIdRef = useRef<number>(0)
-  const dimsRef = useRef({ width: 0, height: 0 })
+  const canvasRef     = useRef<HTMLCanvasElement>(null)
+  const containerRef  = useRef<HTMLDivElement>(null)
+  const particlesRef  = useRef<Particle[]>([])
+  const bgParticlesRef= useRef<BgParticle[]>([])
+  const mouseRef      = useRef<MouseState>({ x: -1000, y: -1000, isActive: false })
+  const frameIdRef    = useRef<number>(0)
+  const dimsRef       = useRef({ width: 0, height: 0 })
+  const frameCountRef = useRef(0)
+  // Cached gradient objects — recreated only on resize
+  const glowVRef      = useRef<CanvasGradient | null>(null)
+  const glowCRef      = useRef<CanvasGradient | null>(null)
+
+  const buildGradients = useCallback((ctx: CanvasRenderingContext2D, w: number, h: number) => {
+    const gv = ctx.createRadialGradient(w * 0.35, h * 0.45, 0, w * 0.35, h * 0.45, Math.max(w, h) * 0.65)
+    gv.addColorStop(0, 'rgba(124,58,237,1)')
+    gv.addColorStop(1, 'rgba(0,0,0,0)')
+    glowVRef.current = gv
+
+    const gc = ctx.createRadialGradient(w * 0.72, h * 0.6, 0, w * 0.72, h * 0.6, Math.max(w, h) * 0.5)
+    gc.addColorStop(0, 'rgba(6,182,212,1)')
+    gc.addColorStop(1, 'rgba(0,0,0,0)')
+    glowCRef.current = gc
+  }, [])
 
   const initParticles = useCallback((width: number, height: number) => {
-    const count = Math.floor(width * height * PARTICLE_DENSITY)
+    const count = Math.min(Math.floor(width * height * 0.00010), MAX_PARTICLES)
     const ps: Particle[] = []
     for (let i = 0; i < count; i++) {
       const x = Math.random() * width
@@ -62,7 +80,7 @@ export function HeroScene() {
     }
     particlesRef.current = ps
 
-    const bgCount = Math.floor(width * height * BG_PARTICLE_DENSITY)
+    const bgCount = Math.min(Math.floor(width * height * 0.000035), MAX_BG_PARTICLES)
     const bgs: BgParticle[] = []
     for (let i = 0; i < bgCount; i++) {
       bgs.push({
@@ -85,27 +103,27 @@ export function HeroScene() {
     if (!ctx) return
 
     const { width, height } = dimsRef.current
+    frameCountRef.current++
+    const frame = frameCountRef.current
 
     // Background fill
     ctx.fillStyle = '#0a0a0c'
     ctx.fillRect(0, 0, width, height)
 
-    // Pulsating dual-color glow (violet → cyan)
-    const pulseA = Math.sin(time * 0.0008) * 0.04 + 0.08
-    const pulseB = Math.cos(time * 0.0006) * 0.02 + 0.05
-    const gv = ctx.createRadialGradient(width * 0.35, height * 0.45, 0, width * 0.35, height * 0.45, Math.max(width, height) * 0.65)
-    gv.addColorStop(0, `rgba(124,58,237,${pulseA})`)
-    gv.addColorStop(1, 'rgba(0,0,0,0)')
-    ctx.fillStyle = gv
-    ctx.fillRect(0, 0, width, height)
+    // Pulsating glows — use cached gradients, control intensity via globalAlpha
+    if (glowVRef.current && glowCRef.current) {
+      const pulseA = Math.sin(time * 0.0008) * 0.04 + 0.08
+      const pulseB = Math.cos(time * 0.0006) * 0.02 + 0.05
+      ctx.globalAlpha = pulseA
+      ctx.fillStyle = glowVRef.current
+      ctx.fillRect(0, 0, width, height)
+      ctx.globalAlpha = pulseB
+      ctx.fillStyle = glowCRef.current
+      ctx.fillRect(0, 0, width, height)
+      ctx.globalAlpha = 1.0
+    }
 
-    const gc = ctx.createRadialGradient(width * 0.72, height * 0.6, 0, width * 0.72, height * 0.6, Math.max(width, height) * 0.5)
-    gc.addColorStop(0, `rgba(6,182,212,${pulseB})`)
-    gc.addColorStop(1, 'rgba(0,0,0,0)')
-    ctx.fillStyle = gc
-    ctx.fillRect(0, 0, width, height)
-
-    // Drifting background stars
+    // Drifting bg stars — update movement every frame, twinkle only every 2nd frame
     const bgs = bgParticlesRef.current
     for (let i = 0; i < bgs.length; i++) {
       const p = bgs[i]
@@ -115,7 +133,7 @@ export function HeroScene() {
       if (p.x > width) p.x = 0
       if (p.y < 0) p.y = height
       if (p.y > height) p.y = 0
-      const twinkle = Math.sin(time * 0.002 + p.phase) * 0.5 + 0.5
+      const twinkle = frame % 2 === 0 ? Math.sin(time * 0.002 + p.phase) * 0.5 + 0.5 : 0.5
       ctx.globalAlpha = p.alpha * (0.3 + 0.7 * twinkle)
       ctx.fillStyle = '#ffffff'
       ctx.beginPath()
@@ -128,44 +146,21 @@ export function HeroScene() {
     const ps = particlesRef.current
     const mouse = mouseRef.current
 
-    // Apply forces
+    // Apply forces (spring return + mouse repulsion) — no O(n²) collision
     for (let i = 0; i < ps.length; i++) {
       const p = ps[i]
-      const dx = mouse.x - p.x
-      const dy = mouse.y - p.y
-      const dist = Math.sqrt(dx * dx + dy * dy)
-      if (mouse.isActive && dist < MOUSE_RADIUS && dist > 0.01) {
-        const force = (MOUSE_RADIUS - dist) / MOUSE_RADIUS * REPULSION
-        p.vx -= (dx / dist) * force * 5
-        p.vy -= (dy / dist) * force * 5
+      if (mouse.isActive) {
+        const dx = mouse.x - p.x
+        const dy = mouse.y - p.y
+        const dist = Math.sqrt(dx * dx + dy * dy)
+        if (dist < MOUSE_RADIUS && dist > 0.01) {
+          const force = (MOUSE_RADIUS - dist) / MOUSE_RADIUS * REPULSION
+          p.vx -= (dx / dist) * force * 5
+          p.vy -= (dy / dist) * force * 5
+        }
       }
       p.vx += (p.originX - p.x) * RETURN_SPEED
       p.vy += (p.originY - p.y) * RETURN_SPEED
-    }
-
-    // Collision resolution
-    for (let i = 0; i < ps.length; i++) {
-      for (let j = i + 1; j < ps.length; j++) {
-        const a = ps[i], b = ps[j]
-        const dx = b.x - a.x, dy = b.y - a.y
-        const distSq = dx * dx + dy * dy
-        const minD = a.size + b.size
-        if (distSq < minD * minD) {
-          const dist = Math.sqrt(distSq)
-          if (dist > 0.01) {
-            const nx = dx / dist, ny = dy / dist
-            const overlap = (minD - dist) * 0.5
-            a.x -= nx * overlap; a.y -= ny * overlap
-            b.x += nx * overlap; b.y += ny * overlap
-            const vaN = (a.vx - b.vx) * nx + (a.vy - b.vy) * ny
-            if (vaN > 0) {
-              const imp = (-(1 + 0.8) * vaN) / (1 / a.size + 1 / b.size)
-              a.vx += imp * nx / a.size; a.vy += imp * ny / a.size
-              b.vx -= imp * nx / b.size; b.vy -= imp * ny / b.size
-            }
-          }
-        }
-      }
     }
 
     // Integrate and draw
@@ -196,19 +191,22 @@ export function HeroScene() {
       if (!containerRef.current || !canvasRef.current) return
       const { width, height } = containerRef.current.getBoundingClientRect()
       dimsRef.current = { width, height }
-      const dpr = window.devicePixelRatio || 1
-      canvasRef.current.width = width * dpr
+      const dpr = Math.min(window.devicePixelRatio || 1, MAX_DPR)
+      canvasRef.current.width  = width  * dpr
       canvasRef.current.height = height * dpr
-      canvasRef.current.style.width = `${width}px`
+      canvasRef.current.style.width  = `${width}px`
       canvasRef.current.style.height = `${height}px`
       const ctx = canvasRef.current.getContext('2d')
-      if (ctx) ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+      if (ctx) {
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+        buildGradients(ctx, width, height)
+      }
       initParticles(width, height)
     }
     window.addEventListener('resize', resize)
     resize()
     return () => window.removeEventListener('resize', resize)
-  }, [initParticles])
+  }, [initParticles, buildGradients])
 
   // Start animation
   useEffect(() => {
@@ -216,7 +214,7 @@ export function HeroScene() {
     return () => cancelAnimationFrame(frameIdRef.current)
   }, [animate])
 
-  // Window-level mouse tracking so particles respond even when hovering text
+  // Mouse tracking
   useEffect(() => {
     const onMove = (e: MouseEvent) => {
       if (!containerRef.current) return
@@ -225,10 +223,8 @@ export function HeroScene() {
         x: e.clientX - rect.left,
         y: e.clientY - rect.top,
         isActive:
-          e.clientX >= rect.left &&
-          e.clientX <= rect.right &&
-          e.clientY >= rect.top &&
-          e.clientY <= rect.bottom,
+          e.clientX >= rect.left && e.clientX <= rect.right &&
+          e.clientY >= rect.top  && e.clientY <= rect.bottom,
       }
     }
     const onLeave = () => { mouseRef.current.isActive = false }

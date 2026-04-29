@@ -57,8 +57,11 @@ export function PartnersMarquee() {
         </h2>
       </div>
 
-      {/* Logo slider — fade mask on edges */}
-      <div className="py-4 [mask-image:linear-gradient(to_right,transparent,black_15%,black_85%,transparent)]">
+      {/* Logo slider — single filter layer + fade mask on edges */}
+      <div
+        className="py-4 [mask-image:linear-gradient(to_right,transparent,black_15%,black_85%,transparent)]"
+        style={{ filter: 'brightness(0) invert(1)', opacity: 0.75 }}
+      >
         <InfiniteSlider gap={42} reverse speed={30}>
           {LOGOS.map((file) => (
             // eslint-disable-next-line @next/next/no-img-element
@@ -69,7 +72,6 @@ export function PartnersMarquee() {
               loading="lazy"
               draggable={false}
               className="pointer-events-none select-none h-12 md:h-16 w-auto"
-              style={{ filter: 'brightness(0) invert(1)', opacity: 0.75 }}
             />
           ))}
         </InfiniteSlider>

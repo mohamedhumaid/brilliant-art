@@ -127,7 +127,7 @@ export function ProcessTeaser() {
         trigger: stepsRef.current,
         start: 'top 75%',
         end: 'bottom 25%',
-        scrub: 0.8,       // responsive lag: lower = more immediate
+        scrub: 0.4,
         animation: tl,
         invalidateOnRefresh: true,
       })
@@ -160,7 +160,7 @@ export function ProcessTeaser() {
           <div
             data-spine
             className="absolute left-1/2 top-0 bottom-0 w-px hidden md:block pointer-events-none"
-            style={{ background: 'linear-gradient(to bottom, #7c3aed, #06b6d4, #7c3aed)' }}
+            style={{ background: 'linear-gradient(to bottom, #7c3aed, #06b6d4, #7c3aed)', willChange: 'transform' }}
           />
 
           {/* Glowing tip — travels with the drawing edge of the spine */}
@@ -193,6 +193,7 @@ export function ProcessTeaser() {
                 <div
                   data-step-card
                   className="flex-1 glass-card p-8 group hover:border-violet/30 transition-colors duration-300"
+                  style={{ willChange: 'transform, opacity' }}
                 >
                   <div className="flex items-center gap-4 mb-4">
                     <span data-step-num className="text-label-sm font-bold text-violet-light">
@@ -211,7 +212,7 @@ export function ProcessTeaser() {
                 {/* Spine dot */}
                 <div
                   data-step-dot
-                  className="hidden md:flex items-center justify-center w-12 h-12 flex-shrink-0 rounded-full glass border border-violet/40 z-10 relative"
+                  className="hidden md:flex items-center justify-center w-12 h-12 flex-shrink-0 rounded-full bg-[#131315] border border-violet/40 z-10 relative"
                   style={{ boxShadow: '0 0 20px 4px rgba(124,58,237,0.25)' }}
                 >
                   <div className="w-3 h-3 rounded-full bg-gradient-to-br from-violet to-cyan" />

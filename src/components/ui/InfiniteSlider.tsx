@@ -30,7 +30,7 @@ export function InfiniteSlider({
           'flex w-max',
           reverse ? 'animate-marquee-reverse' : 'animate-marquee',
         )}
-        style={{ gap, animationDuration: duration }}
+        style={{ gap, animationDuration: duration, willChange: 'transform', transform: 'translateZ(0)' }}
         onMouseEnter={() => {
           if (trackRef.current) trackRef.current.style.animationPlayState = 'paused'
         }}

@@ -21,7 +21,7 @@ html.lenis body {
   --cyan: #06b6d4;
   --glass-bg: rgba(255, 255, 255, 0.03);
   --glass-border: rgba(255, 255, 255, 0.1);
-  --glass-blur: 20px;
+  --glass-blur: 10px;
   --glow-violet: 0 0 80px -10px rgba(124, 58, 237, 0.45);
   --glow-cyan: 0 0 80px -10px rgba(6, 182, 212, 0.4);
 }
@@ -65,8 +65,8 @@ body {
 
   .glass-card {
     background: rgba(255, 255, 255, 0.03);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-top-color: rgba(255, 255, 255, 0.15);
     border-radius: 1.5rem;
@@ -126,8 +126,8 @@ body {
 }
 
 /* Scrolls left; pauses on hover so users can read card content */
-.svc-scroll-left  { animation: svc-scroll 44s linear infinite; }
-.svc-scroll-right { animation: svc-scroll 32s linear infinite reverse; }
+.svc-scroll-left  { animation: svc-scroll 44s linear infinite; will-change: transform; }
+.svc-scroll-right { animation: svc-scroll 32s linear infinite reverse; will-change: transform; }
 .svc-scroll-left:hover,
 .svc-scroll-right:hover { animation-play-state: paused; }
 

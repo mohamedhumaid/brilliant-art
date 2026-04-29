@@ -24,10 +24,14 @@ export const ExpandingCards = React.forwardRef<HTMLUListElement, ExpandingCardsP
     const [isDesktop, setIsDesktop] = React.useState(false)
 
     React.useEffect(() => {
-      const handleResize = () => setIsDesktop(window.innerWidth >= 768)
-      handleResize()
+      let timer: ReturnType<typeof setTimeout>
+      const handleResize = () => {
+        clearTimeout(timer)
+        timer = setTimeout(() => setIsDesktop(window.innerWidth >= 768), 100)
+      }
+      setIsDesktop(window.innerWidth >= 768)
       window.addEventListener('resize', handleResize)
-      return () => window.removeEventListener('resize', handleResize)
+      return () => { window.removeEventListener('resize', handleResize); clearTimeout(timer) }
     }, [])
 
     const gridStyle = React.useMemo(() => {
@@ -47,12 +51,13 @@ export const ExpandingCards = React.forwardRef<HTMLUListElement, ExpandingCardsP
           'w-full gap-2',
           'grid',
           'h-[680px] md:h-[540px]',
-          'transition-[grid-template-columns,grid-template-rows] duration-500 ease-out',
+          'transition-[grid-template-columns,grid-template-rows] duration-300 ease-out',
           className,
         )}
         style={{
           ...gridStyle,
           ...(isDesktop ? { gridTemplateRows: '1fr' } : { gridTemplateColumns: '1fr' }),
+          contain: 'layout paint',
         }}
         ref={ref}
         {...props}
@@ -77,7 +82,7 @@ export const ExpandingCards = React.forwardRef<HTMLUListElement, ExpandingCardsP
               <img
                 src={item.imgSrc}
                 alt={item.title}
-                className="absolute inset-0 h-full w-full object-cover transition-all duration-500 ease-out group-data-[active=true]:scale-100 group-data-[active=true]:grayscale-0 scale-110 grayscale"
+                className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 ease-out group-data-[active=true]:scale-100 scale-110"
               />
             ) : (
               <div

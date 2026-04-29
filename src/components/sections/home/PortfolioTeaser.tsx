@@ -98,7 +98,7 @@ export default function PortfolioTeaser() {
 
   return (
     <section ref={sectionRef} className="relative py-section px-8 overflow-hidden">
-      <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[300px] rounded-full bg-violet/5 blur-[180px] pointer-events-none" />
+      <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[200px] rounded-full bg-violet/5 blur-[80px] pointer-events-none" />
 
       <div className="max-w-[1440px] mx-auto">
         {/* Header */}
