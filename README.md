@@ -334,11 +334,12 @@ Vanilla Three.js globe rendered on a transparent-background WebGL canvas, positi
 - **Transparency sort disorder**: all transparent materials use `depthWrite: false`; atmosphere uses `AdditiveBlending`
 - **Ring rotation drift**: accumulated per-frame (`+= 0.004`) instead of absolute time multiplication
 
-**Interaction (mouse-hover driven):**
-- Mouse X → Y-axis rotation target (`± 0.7 rad`)
-- Mouse Y → X-axis rotation target (`± 0.275 rad`)
-- Lerp factor `0.04` for smooth, lag-free following
-- Auto-rotate resumes when mouse leaves; `baseAngle` syncs on `mouseleave` to prevent rotation jump
+**Interaction (click-and-drag):**
+- Click anywhere on the globe and drag to spin freely in 3D
+- Horizontal drag → Y-axis rotation; vertical drag → X-axis rotation (clamped ±90° to prevent flip)
+- Drag sensitivity: `0.006 rad/px`; lerp `0.25` gives physical weight during drag
+- On mouse-up: `baseAngle` syncs to current Y rotation so auto-spin resumes without a jump
+- `pointer-events-none` removed from mount div; Hero content wrapper given `pointer-events-none` (with `pointer-events-auto` on the inner content only) so clicks pass through to the globe from the full right half
 
 ### `ExpandingCards`
 
@@ -538,6 +539,20 @@ NEXT_PUBLIC_FORM_ENDPOINT=https://your-endpoint.com
 ---
 
 ## 11. Changelog
+
+### 2026-04-29 — Click-and-Drag Globe + Partners Logo Slider
+
+- **GlobeScene.tsx** — replaced passive mouse-follow with full click-and-drag 3D rotation
+  - `mousedown` on globe mount captures drag start position
+  - `mousemove` / `mouseup` on `window` accumulate delta rotation; X clamped to ±90°
+  - Lerp `0.25` during drag for physical inertia feel; auto-spin syncs on release
+  - Mount div: `pointer-events-none` removed → `cursor-grab / active:cursor-grabbing`
+- **Hero.tsx** — fixed pointer-events blocking that prevented globe interaction in the center area
+  - Root content wrapper (`z-30 w-full`) now has `pointer-events-none`
+  - Inner `max-w-4xl` content div has `pointer-events-auto` — text, buttons, links all work
+  - Globe now receives clicks from any point on its visible surface
+- **Partners section** — infinite logo marquee added above the footer
+  - `InfiniteSlider` component: flat white logos, single-row, CSS marquee, configurable speed
 
 ### 2026-04-29 — Interactive 3D Globe + Dual-Row Services Slider
 
