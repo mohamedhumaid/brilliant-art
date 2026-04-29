@@ -48,9 +48,10 @@ export function Hero() {
       <div className="absolute inset-0 z-10 bg-gradient-to-r from-void/75 via-void/25 to-transparent pointer-events-none" />
       <div className="absolute inset-0 z-10 bg-gradient-to-b from-void/40 via-transparent to-void/80 pointer-events-none" />
 
-      {/* Main content */}
-      <div className="relative z-30 max-w-[1440px] mx-auto px-8 w-full">
-        <div className="max-w-4xl">
+      {/* Main content — outer wrapper is pointer-events-none so the right half stays
+          clickable for the globe; the inner content div re-enables events for text/buttons */}
+      <div className="relative z-30 max-w-[1440px] mx-auto px-8 w-full pointer-events-none">
+        <div className="max-w-4xl pointer-events-auto">
           {/* Eyebrow */}
           <div className="flex items-center gap-3 mb-8">
             <span className="w-8 h-px bg-gradient-to-r from-violet to-cyan" />

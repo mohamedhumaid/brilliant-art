@@ -221,31 +221,39 @@ export function GlobeScene() {
       x: 1, y: 1, z: 1, duration: 1.8, ease: 'power3.out', delay: 0.7,
     })
 
-    // ── Mouse-hover interaction ───────────────────────────────────────────────
-    // target.rotY / target.rotX are the desired rotations derived from mouse position.
-    // baseAngle drives auto-rotation when the mouse is away; it syncs to the
-    // current Y rotation on hover-start so there is no jump when switching modes.
-    const target = { rotX: 0, rotY: 0 }
-    let isHovering = false
+    // ── Click-and-drag rotation ───────────────────────────────────────────────
+    const DRAG_SENS = 0.006
+    let isDragging = false
+    let lastX = 0, lastY = 0
+    let dragRotX = 0, dragRotY = 0
     let baseAngle = 0
 
+    const onMouseDown = (e: MouseEvent) => {
+      isDragging = true
+      lastX = e.clientX
+      lastY = e.clientY
+      dragRotX = spinGroup.rotation.x
+      dragRotY = spinGroup.rotation.y
+    }
     const onMouseMove = (e: MouseEvent) => {
-      // Map full viewport → ±range so the whole page acts as a soft controller
-      target.rotY =  ((e.clientX / window.innerWidth)  - 0.5) * 1.4   // ±0.7 rad horizontal
-      target.rotX = -((e.clientY / window.innerHeight) - 0.5) * 0.55  // ±0.275 rad vertical
+      if (!isDragging) return
+      const dx = e.clientX - lastX
+      const dy = e.clientY - lastY
+      lastX = e.clientX
+      lastY = e.clientY
+      dragRotY += dx * DRAG_SENS
+      dragRotX = Math.max(-Math.PI * 0.5, Math.min(Math.PI * 0.5, dragRotX + dy * DRAG_SENS))
     }
-    const onMouseEnter = () => {
-      isHovering = true
-    }
-    const onMouseLeave = () => {
-      isHovering = false
-      // Sync baseAngle to avoid a rotation jump when auto-spin resumes
+    const onMouseUp = () => {
+      if (!isDragging) return
+      isDragging = false
+      // Sync so auto-spin resumes from current angle without a jump
       baseAngle = spinGroup.rotation.y
     }
 
-    window.addEventListener('mousemove',  onMouseMove)
-    mount.addEventListener('mouseenter',  onMouseEnter)
-    mount.addEventListener('mouseleave',  onMouseLeave)
+    mount.addEventListener('mousedown', onMouseDown)
+    window.addEventListener('mousemove', onMouseMove)
+    window.addEventListener('mouseup',   onMouseUp)
 
     // ── Render loop ───────────────────────────────────────────────────────────
     let frameId: number
@@ -255,10 +263,10 @@ export function GlobeScene() {
     const tick = () => {
       frameId = requestAnimationFrame(tick)
 
-      if (isHovering) {
-        // Smoothly follow mouse position
-        spinGroup.rotation.y += (target.rotY - spinGroup.rotation.y) * LERP
-        spinGroup.rotation.x += (target.rotX - spinGroup.rotation.x) * LERP
+      if (isDragging) {
+        // Follow drag target with slight lag for a physical feel
+        spinGroup.rotation.y += (dragRotY - spinGroup.rotation.y) * 0.25
+        spinGroup.rotation.x += (dragRotX - spinGroup.rotation.x) * 0.25
       } else {
         // Auto-rotate; drift X back to neutral
         baseAngle += 0.003
@@ -304,10 +312,10 @@ export function GlobeScene() {
     return () => {
       cancelAnimationFrame(frameId)
       entranceTween.kill()
-      window.removeEventListener('mousemove',  onMouseMove)
-      mount.removeEventListener('mouseenter',  onMouseEnter)
-      mount.removeEventListener('mouseleave',  onMouseLeave)
-      window.removeEventListener('resize',     onResize)
+      mount.removeEventListener('mousedown', onMouseDown)
+      window.removeEventListener('mousemove', onMouseMove)
+      window.removeEventListener('mouseup',   onMouseUp)
+      window.removeEventListener('resize',    onResize)
       renderer.dispose()
       if (canvasCt.contains(renderer.domElement)) canvasCt.removeChild(renderer.domElement)
     }
@@ -316,7 +324,7 @@ export function GlobeScene() {
   return (
     <div
       ref={mountRef}
-      className="absolute right-0 top-0 w-1/2 h-full z-20 pointer-events-none"
+      className="absolute right-0 top-0 w-1/2 h-full z-20 cursor-grab active:cursor-grabbing"
       aria-hidden="true"
     >
       {/* Three.js canvas injected here */}
