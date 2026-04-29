@@ -3,6 +3,7 @@
 import { useEffect, useRef } from 'react'
 import Image from 'next/image'
 import { SectionLabel } from '@/components/ui/SectionLabel'
+import { InfiniteSlider } from '@/components/ui/InfiniteSlider'
 
 const LOGOS = [
   '1-1-300x300.webp',
@@ -27,37 +28,10 @@ const LOGOS = [
   '20-300x300.webp',
 ]
 
-const LOGO_SIZE   = 96   // px — rendered size of each logo square
-const LOGO_GAP    = 48   // px — gap between logos
-const ITEM_WIDTH  = LOGO_SIZE + LOGO_GAP
-const TOTAL_WIDTH = LOGOS.length * ITEM_WIDTH
-const SPEED       = 0.6  // px per frame at 60fps
-
 export function PartnersMarquee() {
-  const trackRef    = useRef<HTMLDivElement>(null)
-  const frameRef    = useRef(0)
-  const rafRef      = useRef<number>(0)
-  const sectionRef  = useRef<HTMLElement>(null)
   const headerRef   = useRef<HTMLDivElement>(null)
   const animStarted = useRef(false)
 
-  // Continuous marquee scroll via rAF
-  useEffect(() => {
-    const track = trackRef.current
-    if (!track) return
-
-    const step = () => {
-      frameRef.current += SPEED
-      const offset = -(frameRef.current % TOTAL_WIDTH)
-      track.style.transform = `translateX(${offset}px)`
-      rafRef.current = requestAnimationFrame(step)
-    }
-
-    rafRef.current = requestAnimationFrame(step)
-    return () => cancelAnimationFrame(rafRef.current)
-  }, [])
-
-  // Header fade-in on scroll (matches site pattern, no GSAP dep here)
   useEffect(() => {
     const header = headerRef.current
     if (!header) return
@@ -78,18 +52,12 @@ export function PartnersMarquee() {
     return () => observer.disconnect()
   }, [])
 
-  // Triple the logos so the loop is seamless across any viewport width
-  const rendered = [...LOGOS, ...LOGOS, ...LOGOS]
-
   return (
-    <section
-      ref={sectionRef}
-      className="relative py-section overflow-hidden"
-    >
+    <section className="relative py-section overflow-hidden">
       {/* Ambient glow */}
-      <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[250px] rounded-full bg-cyan/5 blur-[160px] pointer-events-none" />
+      <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[200px] rounded-full bg-violet/5 blur-[160px] pointer-events-none" />
 
-      {/* Section header */}
+      {/* Header */}
       <div
         ref={headerRef}
         className="text-center mb-14 px-8"
@@ -103,83 +71,23 @@ export function PartnersMarquee() {
         </h2>
       </div>
 
-      {/* 3-D perspective stage */}
-      <div
-        style={{
-          perspective: '1200px',
-          overflow: 'hidden',
-        }}
-      >
-        <div
-          style={{
-            transform: 'rotateX(8deg) rotateY(-28deg)',
-            transformStyle: 'preserve-3d',
-            display: 'flex',
-            alignItems: 'center',
-          }}
-        >
-          {/* Scrolling track */}
-          <div
-            ref={trackRef}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              whiteSpace: 'nowrap',
-              willChange: 'transform',
-              gap: `${LOGO_GAP}px`,
-            }}
-          >
-            {rendered.map((file, i) => {
-              // Per-item depth-based blur + opacity (mirrors Remotion original)
-              const posInSet   = (i % LOGOS.length) / LOGOS.length
-              const norm       = (posInSet - 0.5) * 2          // -1 … 1
-              const dist       = Math.min(1, Math.abs(norm))
-              const blurPx     = dist * 5
-              const opacity    = 1 - dist * 0.35
-
-              return (
-                <div
-                  key={i}
-                  style={{
-                    flexShrink: 0,
-                    width:   LOGO_SIZE,
-                    height:  LOGO_SIZE,
-                    filter:  `blur(${blurPx}px)`,
-                    opacity,
-                    transition: 'filter 0.1s, opacity 0.1s',
-                  }}
-                >
-                  <div className="w-full h-full rounded-2xl bg-white/10 backdrop-blur-sm border border-white/10 flex items-center justify-center p-3">
-                    <Image
-                      src={`/images/partners/${file}`}
-                      alt="partner logo"
-                      width={LOGO_SIZE - 24}
-                      height={LOGO_SIZE - 24}
-                      className="object-contain w-full h-full"
-                      draggable={false}
-                    />
-                  </div>
-                </div>
-              )
-            })}
-          </div>
-        </div>
+      {/* Slider with left/right fade mask */}
+      <div className="[mask-image:linear-gradient(to_right,transparent,black_15%,black_85%,transparent)]">
+        <InfiniteSlider gap={64} speed={40} speedOnHover={80}>
+          {LOGOS.map((file) => (
+            <div key={file} className="flex items-center justify-center w-20 h-20 shrink-0">
+              <Image
+                src={`/images/partners/${file}`}
+                alt="partner logo"
+                width={80}
+                height={80}
+                className="object-contain w-full h-full brightness-0 invert opacity-60 hover:opacity-100 transition-opacity duration-300 select-none pointer-events-none"
+                draggable={false}
+              />
+            </div>
+          ))}
+        </InfiniteSlider>
       </div>
-
-      {/* Left & right fade masks */}
-      <div
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          background: 'linear-gradient(90deg, #0a0a0c 0%, transparent 18%, transparent 82%, #0a0a0c 100%)',
-        }}
-      />
-      {/* Top & bottom fade masks */}
-      <div
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          background: 'linear-gradient(180deg, #0a0a0c 0%, transparent 25%, transparent 75%, #0a0a0c 100%)',
-        }}
-      />
     </section>
   )
 }
