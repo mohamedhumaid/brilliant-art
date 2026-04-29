@@ -22,28 +22,25 @@ export function InfiniteSlider({
 }: InfiniteSliderProps) {
   const trackRef = useRef<HTMLDivElement>(null)
 
-  const duration  = `${speed}s`
+  const duration      = `${speed}s`
   const hoverDuration = speedOnHover ? `${speedOnHover}s` : undefined
 
   return (
-    <div
-      className={cn('overflow-hidden', className)}
-      style={
-        hoverDuration
-          ? ({ '--duration': duration, '--hover-duration': hoverDuration } as React.CSSProperties)
-          : ({ '--duration': duration } as React.CSSProperties)
-      }
-    >
+    <div className={cn('overflow-hidden', className)}>
       <div
         ref={trackRef}
         className={cn(
           'flex w-max',
           reverse ? 'animate-marquee-reverse' : 'animate-marquee',
-          hoverDuration && 'hover:[animation-duration:var(--hover-duration)]',
         )}
-        style={{ gap, animationDuration: 'var(--duration)' }}
+        style={{ gap, animationDuration: duration }}
+        onMouseEnter={() => {
+          if (trackRef.current) trackRef.current.style.animationPlayState = 'paused'
+        }}
+        onMouseLeave={() => {
+          if (trackRef.current) trackRef.current.style.animationPlayState = 'running'
+        }}
       >
-        {/* Original + duplicate for seamless loop */}
         <div className="flex shrink-0 items-center" style={{ gap }}>
           {children}
         </div>

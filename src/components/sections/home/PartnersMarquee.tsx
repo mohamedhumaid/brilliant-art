@@ -1,31 +1,19 @@
 'use client'
 
 import { useEffect, useRef } from 'react'
-import Image from 'next/image'
 import { SectionLabel } from '@/components/ui/SectionLabel'
 import { InfiniteSlider } from '@/components/ui/InfiniteSlider'
 
 const LOGOS = [
-  '1-1-300x300.webp',
-  '2-300x300.webp',
-  '3-300x300.webp',
-  '4-300x300.webp',
-  '5-300x300.webp',
-  '6-300x300.webp',
-  '7-300x300.webp',
-  '8-300x300.webp',
-  '9-300x300.webp',
-  '10-300x300.webp',
-  '11-300x300.webp',
-  '12-300x300.webp',
-  '13-300x300.webp',
-  '14-300x300.webp',
-  '15-300x300.webp',
-  '16-300x300.webp',
-  '17-300x300.webp',
-  '18-300x300.webp',
-  '19-300x300.webp',
-  '20-300x300.webp',
+  'Brilliant-Art-Clients-06-rdma5kki1fwesdl6ys8kh7dh7s0w6kkn5dq7k67gg4.webp',
+  'Brilliant-Art-Clients-07-rdma5mg6f3yzflignt1tm6weejrmlys3tn16iq4o3o.webp',
+  'Brilliant-Art-Clients-08-rdmad2c6iw5pcgpc7iuhutarpd38jpblugykal3guc.webp',
+  'Brilliant-Art-Clients-13-rdma5p9ozm2uefed7c9pbo6s6pdq923au0zmyk0hl0.webp',
+  'Brilliant-Art-Clients-16-rdmadcoem2juw6abj5be48ou8lo9wdgnjw4wkmo4xw.webp',
+  'Brilliant-Art-Clients-18-rdmadek2zqmfje7l864n987rfdf0bro485fvj6lclg.webp',
+  'Brilliant-Art-Clients-20-rdma5uwq4makc366aepgqmrjr0lxj8pouswju7s4jo.webp',
+  'Brilliant-Art-Clients-22-rdma5wseiad4zb3fzfipvmagxscnymx5j27isrpc78.webp',
+  'Brilliant-Art-Clients-24-rdmadj99xwsv5g0rgq5s3p12earue96rwspaxkedqc.webp',
 ]
 
 export function PartnersMarquee() {
@@ -35,7 +23,6 @@ export function PartnersMarquee() {
   useEffect(() => {
     const header = headerRef.current
     if (!header) return
-
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting && !animStarted.current) {
@@ -47,7 +34,6 @@ export function PartnersMarquee() {
       },
       { threshold: 0.2 },
     )
-
     observer.observe(header)
     return () => observer.disconnect()
   }, [])
@@ -71,20 +57,20 @@ export function PartnersMarquee() {
         </h2>
       </div>
 
-      {/* Slider with left/right fade mask */}
-      <div className="[mask-image:linear-gradient(to_right,transparent,black_15%,black_85%,transparent)]">
-        <InfiniteSlider gap={64} speed={40} speedOnHover={80}>
+      {/* Logo slider — fade mask on edges */}
+      <div className="py-4 [mask-image:linear-gradient(to_right,transparent,black_15%,black_85%,transparent)]">
+        <InfiniteSlider gap={42} reverse speed={30} speedOnHover={25}>
           {LOGOS.map((file) => (
-            <div key={file} className="flex items-center justify-center w-20 h-20 shrink-0">
-              <Image
-                src={`/images/partners/${file}`}
-                alt="partner logo"
-                width={80}
-                height={80}
-                className="object-contain w-full h-full brightness-0 invert opacity-60 hover:opacity-100 transition-opacity duration-300 select-none pointer-events-none"
-                draggable={false}
-              />
-            </div>
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              key={file}
+              src={`/images/partners/${file}`}
+              alt="partner logo"
+              loading="lazy"
+              draggable={false}
+              className="pointer-events-none select-none h-12 md:h-16 w-auto"
+              style={{ filter: 'brightness(0) invert(1)', opacity: 0.75 }}
+            />
           ))}
         </InfiniteSlider>
       </div>
