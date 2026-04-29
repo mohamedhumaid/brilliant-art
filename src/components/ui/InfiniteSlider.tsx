@@ -22,8 +22,7 @@ export function InfiniteSlider({
 }: InfiniteSliderProps) {
   const trackRef = useRef<HTMLDivElement>(null)
 
-  const duration      = `${speed}s`
-  const hoverDuration = speedOnHover ? `${speedOnHover}s` : undefined
+  const duration = `${speed}s`
 
   return (
     <div className={cn('overflow-hidden', className)}>
